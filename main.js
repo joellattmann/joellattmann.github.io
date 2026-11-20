@@ -57,11 +57,21 @@ if (canvas) {
     { x: 0.43, y: 0.10, size: 0.17, tilt: 0.65, spin: -0.00010 },
     { x: 0.90, y: 0.15, size: 0.17, tilt: 0.95, spin: 0.00007 }
   ].map(f => ({ ...f, petals: Math.round(55 + f.size * 130), ppp: Math.round(26 + f.size * 50) }));
-  const flowers = layout.map(f => ({ ...f, pts: chrysanthemum(f.petals, f.ppp), phase: Math.random() * 6.28 }));
+  const flowers = layout.map(f => ({
+    ...f,
+    pts: chrysanthemum(f.petals, f.ppp),
+    phase: Math.random() * 6.28,
+    gain: rand(0.45, 1.25),            // how strongly it turns to the mouse
+    ease: rand(0.015, 0.07),           // how quickly it follows
+    swayA: rand(0.04, 0.12), swayF: rand(0.00025, 0.0007),
+    rockA: rand(0.08, 0.22), rockF: rand(0.0002, 0.0006),
+    driftA: rand(4, 12), driftF: rand(0.00015, 0.0004),
+    lx: 0, ly: 0
+  }));
 
   let w, h, dpr;
-  const target = { x: 0, y: 0 }, look = { x: 0, y: 0 };
-  const mouse = { x: -1e4, y: -1e4 }, REPEL = 130;
+  const target = { x: 0, y: 0 };
+  const mouse = { x: -1e4, y: -1e4 }, REPEL = 120;
   const LEVELS = 10;
   const buckets = Array.from({ length: LEVELS }, () => []);
 
@@ -74,19 +84,22 @@ if (canvas) {
 
   function draw(t) {
     ctx.clearRect(0, 0, w, h);
-    look.x += (target.x - look.x) * 0.05;
-    look.y += (target.y - look.y) * 0.05;
     for (const b of buckets) b.length = 0;
 
     const m = Math.min(w, h);
     for (const f of flowers) {
       const spin = f.phase + t * f.spin;
-      const sway = 0.06 * Math.sin(t * 0.0004 + f.phase);
+      f.lx += (target.x * f.gain - f.lx) * f.ease;
+      f.ly += (target.y * f.gain - f.ly) * f.ease;
+      const sway = f.swayA * Math.sin(t * f.swayF + f.phase);
+      const rock = f.rockA * Math.sin(t * f.rockF + f.phase * 1.7);
       const cs = Math.cos(spin), ss = Math.sin(spin);
-      const ax = f.tilt + sway + look.y;                 // tilt towards / away
-      const ay = look.x + 0.25 * Math.sin(f.phase);      // turn left / right
+      const ax = f.tilt + sway + f.ly;                   // tilt towards / away
+      const ay = rock + f.lx + 0.25 * Math.sin(f.phase); // turn left / right
       const cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
-      const S = m * f.size, ox = f.x * w, oy = f.y * h;
+      const S = m * f.size;
+      const ox = f.x * w + f.driftA * Math.sin(t * f.driftF + f.phase);
+      const oy = f.y * h + f.driftA * Math.cos(t * f.driftF * 0.8 + f.phase * 2.3);
 
       // projected bloom centre and radius, used to hide stem points behind the bloom
       const R2 = (S * 0.95) * (S * 0.95);
@@ -103,8 +116,8 @@ if (canvas) {
         let px = ox + x2 * S * p, py = oy + y1 * S * p;
         const mx = px - mouse.x, my = py - mouse.y, md = mx * mx + my * my;
         if (md < REPEL * REPEL && md > 0.01) {
-          const d = Math.sqrt(md), k = (1 - d / REPEL);
-          px += mx / d * k * k * 22; py += my / d * k * k * 22;
+          const k = 1 - Math.sqrt(md) / REPEL;   // gentle lens: pushes outwards without leaving a hole
+          px += mx * 0.55 * k * k; py += my * 0.55 * k * k;
         }
         buckets[lvl].push(px, py, p);
       }
