@@ -58,7 +58,7 @@ if (canvas) {
 
   window.addEventListener('resize', resize);
   window.addEventListener('pointermove', e => {
-    target.x = (e.clientX / w - 0.5) * 0.6;
+    target.x = -(e.clientX / w - 0.5) * 0.6;
     target.y = (e.clientY / h - 0.5) * 0.4;
   });
   resize();

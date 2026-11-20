@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;600&family=Geist+Mono:wght@400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;600&family=Geist+Mono:wght@400&family=Syne:wght@500;600&display=swap");
 
 :root {
   --bg: #000;
@@ -7,6 +7,7 @@
   --faint: rgba(255, 255, 255, 0.14);
   --pill: #606060;
   --sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --display: "Syne", "Geist", sans-serif;
   --mono: "Geist Mono", ui-monospace, Menlo, monospace;
 }
 
@@ -85,10 +86,11 @@ nav a:hover, nav a.active { background: var(--pill); }
   position: absolute;
   left: 0.75rem;
   bottom: 0.75rem;
-  font-weight: 300;
-  font-size: clamp(2.5rem, 8vw, 7rem);
-  letter-spacing: -0.045em;
-  line-height: 0.9;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  letter-spacing: -0.03em;
+  line-height: 0.95;
   opacity: 0;
   animation: rise 1.2s 0.9s cubic-bezier(.2,.7,.2,1) forwards;
   display: inline-block;
@@ -135,14 +137,15 @@ nav a:hover, nav a.active { background: var(--pill); }
 
 /* ---------- inner pages ---------- */
 main {
-  padding: 5.5rem 0.75rem 6rem;
-  max-width: 1400px;
+  padding: 6.5rem clamp(1.25rem, 8vw, 9rem) 6rem;
+  max-width: 1500px;
 }
 
 .page-title {
-  font-weight: 300;
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
-  letter-spacing: -0.045em;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  letter-spacing: -0.03em;
   line-height: 0.95;
   margin-bottom: 3rem;
 }
@@ -155,7 +158,15 @@ main {
   letter-spacing: 0.06em;
 }
 
-.wip { color: var(--dim); }
+.wip {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+}
 
 /* software entry: index-style grid */
 .entry {
@@ -167,7 +178,8 @@ main {
 }
 
 .entry h2 {
-  font-weight: 400;
+  font-family: var(--display);
+  font-weight: 500;
   font-size: 1.6rem;
   letter-spacing: -0.02em;
   margin: 0.4rem 0 1rem;
