@@ -48,6 +48,12 @@ if (canvas) {
   }
 
   // layout as fractions of the viewport; size relative to min(w, h)
+  const inner = canvas.dataset.layout === 'inner';
+  const innerLayout = [
+    { x: 0.90, y: 0.58, size: 0.55, tilt: 0.80, spin: 0.00004 },
+    { x: 0.64, y: 1.02, size: 0.32, tilt: 0.60, spin: -0.00006 },
+    { x: 1.00, y: 0.06, size: 0.24, tilt: 1.00, spin: 0.00007 }
+  ];
   const layout = [
     { x: 0.70, y: 0.42, size: 0.46, tilt: 0.75, spin: 0.00005 },
     { x: 0.22, y: 0.24, size: 0.32, tilt: 1.00, spin: -0.00007 },
@@ -56,8 +62,10 @@ if (canvas) {
     { x: 0.03, y: 0.66, size: 0.22, tilt: 0.85, spin: 0.00008 },
     { x: 0.43, y: 0.10, size: 0.17, tilt: 0.65, spin: -0.00010 },
     { x: 0.90, y: 0.15, size: 0.17, tilt: 0.95, spin: 0.00007 }
-  ].map(f => ({ ...f, petals: Math.round(55 + f.size * 130), ppp: Math.round(26 + f.size * 50) }));
-  const flowers = layout.map(f => ({
+  ];
+  const chosen = (inner ? innerLayout : layout)
+    .map(f => ({ ...f, petals: Math.round(55 + f.size * 130), ppp: Math.round(26 + f.size * 50) }));
+  const flowers = chosen.map(f => ({
     ...f,
     pts: chrysanthemum(f.petals, f.ppp),
     phase: Math.random() * 6.28,

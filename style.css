@@ -78,6 +78,9 @@ nav a:hover, nav a.active { background: var(--pill); }
   z-index: 0;
 }
 
+#field.bg { opacity: 0.38; }
+main { position: relative; z-index: 1; }
+
 .landing {
   position: fixed;
   inset: 0;
@@ -168,6 +171,7 @@ main {
 
 .wip {
   position: fixed;
+  z-index: 1;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
