@@ -19,7 +19,7 @@ if (canvas) {
       const r = Math.sqrt((i + 1) / nPetals);          // 0 = centre, 1 = outer ring
       const theta = i * GOLD + rand(-0.03, 0.03);
       const L = 0.18 + 0.82 * r;                        // inner petals shorter
-      const pitch = 0.12 + Math.pow(1 - r, 1.3) * 1.35; // inner petals upright -> dome
+      const pitch = 0.12 + Math.pow(1 - r, 1.3) * 1.35;   // inner petals upright -> dome
       const curl = r > 0.8 ? -0.9 * (r - 0.8) * 5 * 0.35 : 1.1 * (1 - r);  // outer droop, inner incurve
       const hwMax = 0.03 + 0.045 * r;
       const ux = Math.cos(theta), uy = Math.sin(theta), nx = -uy, ny = ux;
@@ -47,8 +47,51 @@ if (canvas) {
     return pts;
   }
 
+  // wilted flower for the 404 page: stem arcs over, bloom hangs, petals on the ground
+  function wiltedFlower() {
+    const pts = [];
+    const n = 80;
+    for (let i = 0; i < n; i++) {
+      if (Math.random() < 0.3) continue;                       // a few petals already gone
+      const r = Math.sqrt((i + 1) / n), th = i * GOLD;
+      const c0 = 0.2 + 1.05 * r, L = 0.45 + 0.6 * r, hwMax = 0.03 + 0.04 * r;
+      const ct = Math.cos(th), st = Math.sin(th);
+      for (let k = 0; k < 34; k++) {
+        const s = (k + Math.random() * 0.6) / 34;
+        const c = c0 * (1 - 0.55 * s);                          // gravity pulls tips down
+        const hw = hwMax * Math.sqrt(Math.max(0, Math.sin(Math.PI * Math.pow(s, 0.75)))) * (Math.random() < 0.5 ? -1 : 1);
+        pts.push([s * L * Math.sin(c) * ct - hw * st, s * L * Math.cos(c), s * L * Math.sin(c) * st + hw * ct, 0]);
+      }
+    }
+    for (let k = 0; k < 90; k++) {                              // receptacle
+      const a = Math.random() * 6.28, rr = 0.07 * Math.sqrt(Math.random());
+      pts.push([rr * Math.cos(a), -0.02 + rand(-0.03, 0.03), rr * Math.sin(a), 0]);
+    }
+    const G = 2.3;                                              // ground level
+    const P0 = [1.7, G], P1 = [1.55, -2.5], P2 = [0, -0.06];    // stem as a bezier arc
+    for (let k = 0; k < 700; k++) {
+      const t = Math.random(), u = 1 - t;
+      pts.push([u * u * P0[0] + 2 * u * t * P1[0] + t * t * P2[0] + rand(-0.008, 0.008),
+                u * u * P0[1] + 2 * u * t * P1[1] + t * t * P2[1], rand(-0.008, 0.008), 0]);
+    }
+    for (let k = 0; k < 260; k++) pts.push([rand(-1.9, 2.7), G + rand(-0.004, 0.004), rand(-0.3, 0.3), 0]);  // ground
+    for (let q = 0; q < 7; q++) {                               // fallen petals
+      const gx = rand(-1.4, 1.3), gz = rand(-0.4, 0.4), ang = rand(0, Math.PI), len = rand(0.35, 0.55);
+      for (let k = 0; k < 36; k++) {
+        const s = Math.random(), hw = 0.045 * Math.sin(Math.PI * s) * (Math.random() < 0.5 ? -1 : 1);
+        pts.push([gx + s * len * Math.cos(ang) - hw * Math.sin(ang), G - 0.01, gz + s * len * Math.sin(ang) + hw * Math.cos(ang), 0]);
+      }
+    }
+    return pts;
+  }
+
   // layout as fractions of the viewport; size relative to min(w, h)
-  const inner = canvas.dataset.layout === 'inner';
+  const mode = canvas.dataset.layout || 'landing';
+  const inner = mode === 'inner';
+  const wiltedLayout = [
+    { x: 0.45, y: 0.28, size: 0.17, tilt: 0.12, spin: 0, wilt: true,
+      yaw: 0.08, tiltOff: 0, roll: 0, gain: 0.3 }
+  ];
   const innerLayout = [
     { x: 0.90, y: 0.58, size: 0.55, tilt: 0.80, spin: 0.00004 },
     { x: 0.64, y: 1.02, size: 0.32, tilt: 0.60, spin: -0.00006 },
@@ -63,20 +106,20 @@ if (canvas) {
     { x: 0.43, y: 0.10, size: 0.17, tilt: 0.65, spin: -0.00010 },
     { x: 0.90, y: 0.15, size: 0.17, tilt: 0.95, spin: 0.00007 }
   ];
-  const chosen = (inner ? innerLayout : layout)
+  const chosen = (mode === 'wilted' ? wiltedLayout : inner ? innerLayout : layout)
     .map(f => ({ ...f, petals: Math.round(55 + f.size * 130), ppp: Math.round(26 + f.size * 50) }));
   const flowers = chosen.map(f => ({
     ...f,
-    pts: chrysanthemum(f.petals, f.ppp),
+    pts: f.wilt ? wiltedFlower() : chrysanthemum(f.petals, f.ppp),
     phase: Math.random() * 6.28,
-    gain: rand(0.45, 1.25),            // how strongly it turns to the mouse
+    gain: f.gain ?? rand(0.45, 1.25),  // how strongly it turns to the mouse
     ease: rand(0.015, 0.07),           // how quickly it follows
     swayA: rand(0.04, 0.12), swayF: rand(0.00025, 0.0007),
     rockA: rand(0.08, 0.22), rockF: rand(0.0002, 0.0006),
     driftA: rand(4, 12), driftF: rand(0.00015, 0.0004),
-    yaw: rand(-0.9, 0.9),              // base facing left / right
-    tiltOff: rand(-0.45, 0.35),        // base facing up / down
-    roll: rand(-0.9, 0.9),             // lean in the screen plane (stem direction)
+    yaw: f.yaw ?? rand(-0.9, 0.9),          // base facing left / right
+    tiltOff: f.tiltOff ?? rand(-0.45, 0.35), // base facing up / down
+    roll: f.roll ?? rand(-0.9, 0.9),        // lean in the screen plane (stem direction)
     rollA: rand(0.05, 0.15), rollF: rand(0.0002, 0.0005),
     lx: 0, ly: 0
   }));
@@ -100,7 +143,7 @@ if (canvas) {
 
     const m = Math.min(w, h);
     for (const f of flowers) {
-      const spin = f.phase + t * f.spin;
+      const spin = f.wilt ? 0 : f.phase + t * f.spin;
       f.lx += (target.x * f.gain - f.lx) * f.ease;
       f.ly += (target.y * f.gain - f.ly) * f.ease;
       const sway = f.swayA * Math.sin(t * f.swayF + f.phase);
