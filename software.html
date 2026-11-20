@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Software — Joël Lattmann</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <a class="mark" href="index.html">jl</a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="research.html">Research</a>
+      <a href="software.html">Software</a>
+      <a href="teaching.html">Teaching</a>
+      <a href="cv.html">CV</a>
+    </nav>
+  </header>
+  <footer><a href="https://github.com/joellattmann">github ↗</a></footer>
+
+  <main>
+    <h1 class="page-title">Software</h1>
+
+    <article class="entry">
+      <div>
+        <p class="label">01 — R package</p>
+        <h2>gganimslide</h2>
+        <img src="assets/gganimslide-logo.png" alt="gganimslide logo" />
+      </div>
+      <div>
+        <p>Reveal the layers of a saved ggplot step by step in PowerPoint or LaTeX beamer. <code>ggppt()</code> writes a slide with editable vector shapes and native animations; <code>ggtex()</code> writes a multi-page PDF plus beamer overlay code. Axes and layers never shift between steps.</p>
+        <p class="label">v0.2.0 · MIT</p>
+<pre><code><span class="c"># install.packages("remotes")</span>
+remotes::install_github("joellattmann/gganimslide")
+
+ggppt(p, "plot.pptx", animate = c(3, 4, 5))  <span class="c"># PowerPoint</span>
+ggtex(p, "plot.pdf",  animate = c(3, 4, 5))  <span class="c"># beamer</span></code></pre>
+        <div class="links">
+          <a href="https://github.com/joellattmann/gganimslide">GitHub ↗</a>
+          <a href="https://github.com/joellattmann/gganimslide#readme">Docs ↗</a>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
