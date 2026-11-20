@@ -66,6 +66,10 @@ if (canvas) {
     swayA: rand(0.04, 0.12), swayF: rand(0.00025, 0.0007),
     rockA: rand(0.08, 0.22), rockF: rand(0.0002, 0.0006),
     driftA: rand(4, 12), driftF: rand(0.00015, 0.0004),
+    yaw: rand(-0.9, 0.9),              // base facing left / right
+    tiltOff: rand(-0.45, 0.35),        // base facing up / down
+    roll: rand(-0.9, 0.9),             // lean in the screen plane (stem direction)
+    rollA: rand(0.05, 0.15), rollF: rand(0.0002, 0.0005),
     lx: 0, ly: 0
   }));
 
@@ -94,8 +98,10 @@ if (canvas) {
       const sway = f.swayA * Math.sin(t * f.swayF + f.phase);
       const rock = f.rockA * Math.sin(t * f.rockF + f.phase * 1.7);
       const cs = Math.cos(spin), ss = Math.sin(spin);
-      const ax = f.tilt + sway + f.ly;                   // tilt towards / away
-      const ay = rock + f.lx + 0.25 * Math.sin(f.phase); // turn left / right
+      const ax = f.tilt + f.tiltOff + sway + f.ly;       // tilt towards / away
+      const ay = f.yaw + rock + f.lx;                    // turn left / right
+      const rl = f.roll + f.rollA * Math.sin(t * f.rollF + f.phase * 0.7);
+      const cr = Math.cos(rl), sr = Math.sin(rl);
       const cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
       const S = m * f.size;
       const ox = f.x * w + f.driftA * Math.sin(t * f.driftF + f.phase);
@@ -113,7 +119,8 @@ if (canvas) {
           if (dx * dx + dy * dy < R2) continue;
         }
         const lvl = Math.max(0, Math.min(LEVELS - 1, Math.round((z2 + 1) / 2.2 * (LEVELS - 1))));
-        let px = ox + x2 * S * p, py = oy + y1 * S * p;
+        const xr = x2 * cr - y1 * sr, yr = x2 * sr + y1 * cr;        // lean in screen plane
+        let px = ox + xr * S * p, py = oy + yr * S * p;
         const mx = px - mouse.x, my = py - mouse.y, md = mx * mx + my * my;
         if (md < REPEL * REPEL && md > 0.01) {
           const k = 1 - Math.sqrt(md) / REPEL;   // gentle lens: pushes outwards without leaving a hole
