@@ -4,28 +4,66 @@ document.querySelectorAll('nav a').forEach(a => {
   if (a.getAttribute('href') === path) a.classList.add('active');
 });
 
-// landing: slowly rotating monochrome point cloud
+// landing: point-cloud chrysanthemums
 const canvas = document.getElementById('field');
 if (canvas) {
   const ctx = canvas.getContext('2d');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const N = 2200;
-  const pts = [];
-  // points on a gently deformed torus-knot-ish shell
-  for (let i = 0; i < N; i++) {
-    const u = Math.random() * Math.PI * 2;
-    const v = Math.random() * Math.PI * 2;
-    const R = 1 + 0.18 * Math.sin(3 * u);
-    const r = 0.38 + 0.06 * Math.cos(5 * v + u);
-    pts.push([
-      (R + r * Math.cos(v)) * Math.cos(u),
-      (R + r * Math.cos(v)) * Math.sin(u),
-      r * Math.sin(v) + 0.25 * Math.sin(2 * u)
-    ]);
+  const GOLD = Math.PI * (3 - Math.sqrt(5));
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  // one chrysanthemum in local coords; z = flower axis. 4th value: 1 = stem/leaf
+  function chrysanthemum(nPetals, ptsPerPetal) {
+    const pts = [];
+    for (let i = 0; i < nPetals; i++) {
+      const r = Math.sqrt((i + 1) / nPetals);          // 0 = centre, 1 = outer ring
+      const theta = i * GOLD + rand(-0.03, 0.03);
+      const L = 0.18 + 0.82 * r;                        // inner petals shorter
+      const pitch = 0.12 + Math.pow(1 - r, 1.3) * 1.35; // inner petals upright -> dome
+      const curl = r > 0.8 ? -0.9 * (r - 0.8) * 5 * 0.35 : 1.1 * (1 - r);  // outer droop, inner incurve
+      const hwMax = 0.03 + 0.045 * r;
+      const ux = Math.cos(theta), uy = Math.sin(theta), nx = -uy, ny = ux;
+      for (let k = 0; k < ptsPerPetal; k++) {
+        const s = Math.min(1, (k + Math.random() * 0.6) / ptsPerPetal * 1.02);
+        const phi = pitch + curl * s * s;
+        const rad = L * s * Math.cos(phi);
+        const z = L * s * Math.sin(phi) * 0.8;
+        const hw = hwMax * Math.sqrt(Math.max(0, Math.sin(Math.PI * Math.pow(s, 0.75)))) * (Math.random() < 0.9 ? 1 : Math.random());
+        const side = Math.random() < 0.5 ? -1 : 1;
+        pts.push([rad * ux + side * hw * nx, rad * uy + side * hw * ny, z, 0]);
+      }
+    }
+    // dense centre
+    for (let k = 0; k < nPetals; k++) {
+      const a = Math.random() * Math.PI * 2, rr = 0.06 * Math.sqrt(Math.random());
+      pts.push([rr * Math.cos(a), rr * Math.sin(a), 0.42 + rand(-0.02, 0.02), 0]);
+    }
+    // stem curving away from the bloom
+    const bend = rand(-0.5, 0.5);
+    for (let k = 0; k < 380; k++) {
+      const t = Math.random();
+      pts.push([bend * t * t * 1.2 + rand(-0.01, 0.01), rand(-0.01, 0.01), -0.1 - t * 3.2, 1]);
+    }
+    return pts;
   }
 
+  // layout as fractions of the viewport; size relative to min(w, h)
+  const layout = [
+    { x: 0.70, y: 0.42, size: 0.46, tilt: 0.75, spin: 0.00005 },
+    { x: 0.22, y: 0.24, size: 0.32, tilt: 1.00, spin: -0.00007 },
+    { x: 0.44, y: 0.82, size: 0.28, tilt: 0.55, spin: 0.00009 },
+    { x: 0.96, y: 0.92, size: 0.26, tilt: 1.10, spin: -0.00006 },
+    { x: 0.03, y: 0.66, size: 0.22, tilt: 0.85, spin: 0.00008 },
+    { x: 0.43, y: 0.10, size: 0.17, tilt: 0.65, spin: -0.00010 },
+    { x: 0.90, y: 0.15, size: 0.17, tilt: 0.95, spin: 0.00007 }
+  ].map(f => ({ ...f, petals: Math.round(55 + f.size * 130), ppp: Math.round(26 + f.size * 50) }));
+  const flowers = layout.map(f => ({ ...f, pts: chrysanthemum(f.petals, f.ppp), phase: Math.random() * 6.28 }));
+
   let w, h, dpr;
-  const target = { x: 0, y: 0 }, tilt = { x: 0, y: 0 };
+  const target = { x: 0, y: 0 }, look = { x: 0, y: 0 };
+  const mouse = { x: -1e4, y: -1e4 }, REPEL = 130;
+  const LEVELS = 10;
+  const buckets = Array.from({ length: LEVELS }, () => []);
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -36,31 +74,62 @@ if (canvas) {
 
   function draw(t) {
     ctx.clearRect(0, 0, w, h);
-    tilt.x += (target.x - tilt.x) * 0.04;
-    tilt.y += (target.y - tilt.y) * 0.04;
+    look.x += (target.x - look.x) * 0.05;
+    look.y += (target.y - look.y) * 0.05;
+    for (const b of buckets) b.length = 0;
 
-    const a = t * 0.00012 + tilt.x;      // rotation around y
-    const b = 0.9 + tilt.y;              // rotation around x
-    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
-    const s = Math.min(w, h) * 0.22, cx = w / 2, cy = h * 0.44;
+    const m = Math.min(w, h);
+    for (const f of flowers) {
+      const spin = f.phase + t * f.spin;
+      const sway = 0.06 * Math.sin(t * 0.0004 + f.phase);
+      const cs = Math.cos(spin), ss = Math.sin(spin);
+      const ax = f.tilt + sway + look.y;                 // tilt towards / away
+      const ay = look.x + 0.25 * Math.sin(f.phase);      // turn left / right
+      const cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
+      const S = m * f.size, ox = f.x * w, oy = f.y * h;
 
-    for (const [x, y, z] of pts) {
-      const x1 = x * ca + z * sa, z1 = -x * sa + z * ca;
-      const y2 = y * cb - z1 * sb, z2 = y * sb + z1 * cb;
-      const p = 3 / (3 + z2);
-      const alpha = Math.max(0.08, Math.min(1, 0.55 - z2 * 0.45));
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      const size = 1.1 * p;
-      ctx.fillRect(cx + x1 * s * p, cy + y2 * s * p, size, size);
+      // projected bloom centre and radius, used to hide stem points behind the bloom
+      const R2 = (S * 0.95) * (S * 0.95);
+      for (const [x0, y0, z0, isStem] of f.pts) {
+        const x = x0 * cs - y0 * ss, y = x0 * ss + y0 * cs, z = z0;  // spin about own axis
+        const y1 = y * cx - z * sx, z1 = y * sx + z * cx;              // tilt about x
+        const x2 = x * cy + z1 * sy, z2 = -x * sy + z1 * cy;           // turn about y
+        const p = 4 / (4 - z2);
+        if (isStem && z2 < 0) {
+          const dx = x2 * S, dy = y1 * S;
+          if (dx * dx + dy * dy < R2) continue;
+        }
+        const lvl = Math.max(0, Math.min(LEVELS - 1, Math.round((z2 + 1) / 2.2 * (LEVELS - 1))));
+        let px = ox + x2 * S * p, py = oy + y1 * S * p;
+        const mx = px - mouse.x, my = py - mouse.y, md = mx * mx + my * my;
+        if (md < REPEL * REPEL && md > 0.01) {
+          const d = Math.sqrt(md), k = (1 - d / REPEL);
+          px += mx / d * k * k * 22; py += my / d * k * k * 22;
+        }
+        buckets[lvl].push(px, py, p);
+      }
+    }
+
+    for (let l = 0; l < LEVELS; l++) {
+      const b = buckets[l];
+      ctx.fillStyle = `rgba(255,255,255,${0.12 + 0.88 * l / (LEVELS - 1)})`;
+      ctx.beginPath();
+      for (let i = 0; i < b.length; i += 3) {
+        const s = 1.05 * b[i + 2];
+        ctx.rect(b[i], b[i + 1], s, s);
+      }
+      ctx.fill();
     }
     if (!reduce) requestAnimationFrame(draw);
   }
 
   window.addEventListener('resize', resize);
   window.addEventListener('pointermove', e => {
-    target.x = -(e.clientX / w - 0.5) * 0.6;
-    target.y = (e.clientY / h - 0.5) * 0.4;
+    target.x = (e.clientX / w - 0.5) * 0.7;
+    target.y = -(e.clientY / h - 0.5) * 0.5;
+    mouse.x = e.clientX; mouse.y = e.clientY;
   });
+  document.addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
   resize();
   requestAnimationFrame(draw);
 }
