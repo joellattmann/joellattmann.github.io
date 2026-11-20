@@ -64,3 +64,42 @@ if (canvas) {
   resize();
   requestAnimationFrame(draw);
 }
+
+// about window: close / minimise / expand / drag / reopen
+const win = document.getElementById('about');
+const reopen = document.getElementById('reopen');
+if (win && reopen) {
+  win.addEventListener('animationend', () => win.classList.add('shown'));
+
+  win.querySelectorAll('.dot').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const act = btn.dataset.act;
+    if (act === 'close') { win.classList.add('closed'); reopen.classList.add('show'); }
+    if (act === 'min') win.classList.toggle('min');
+    if (act === 'max') win.classList.toggle('max');
+  }));
+
+  reopen.addEventListener('click', () => {
+    win.classList.remove('closed', 'min');
+    win.classList.add('shown');
+    win.style.left = ''; win.style.top = '';
+    reopen.classList.remove('show');
+  });
+
+  // drag by title bar
+  const bar = win.querySelector('.win-bar');
+  let drag = null;
+  bar.addEventListener('pointerdown', e => {
+    if (e.target.closest('.dot')) return;
+    const r = win.getBoundingClientRect();
+    drag = { dx: e.clientX - (r.left + r.width / 2), dy: e.clientY - (r.top + r.height / 2) };
+    bar.setPointerCapture(e.pointerId);
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag) return;
+    win.classList.add('shown');
+    win.style.left = (e.clientX - drag.dx) + 'px';
+    win.style.top = (e.clientY - drag.dy) + 'px';
+  });
+  bar.addEventListener('pointerup', () => { drag = null; });
+}
