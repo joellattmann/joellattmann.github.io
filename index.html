@@ -22,7 +22,7 @@
   <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="preload" href="assets/fonts/geist-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=20261121c" />
+  <link rel="stylesheet" href="style.css?v=20261122e" />
   <script type="application/ld+json">
   {"@context": "https://schema.org", "@type": "Person",
    "name": "Joël F. Lattmann", "alternateName": "Joël Frédéric Lattmann",
@@ -43,7 +43,7 @@
       <a href="cv.html">CV</a>
     </nav>
   </header>
-  <footer><a href="https://orcid.org/0009-0002-9551-1876">orcid ↗</a><a href="https://github.com/joellattmann">github ↗</a></footer>
+  <footer><a href="https://orcid.org/0009-0002-9551-1876">orcid ↗&#xFE0E;</a><a href="https://github.com/joellattmann">github ↗&#xFE0E;</a></footer>
 
   <canvas id="field" aria-hidden="true"></canvas>
   <div class="landing">
@@ -52,7 +52,36 @@
     <p class="note">Zurich</p>
   </div>
 
-  <section class="win" id="about" role="dialog" aria-label="About">
+  <section class="win" id="research-win" data-title="research.txt" role="dialog" aria-label="research.txt">
+    <div class="win-bar">
+      <div class="dots">
+        <button class="dot red" data-act="close" aria-label="Close"></button>
+        <button class="dot yellow" data-act="min" aria-label="Minimise"></button>
+        <button class="dot green" data-act="max" aria-label="Expand"></button>
+      </div>
+      <span class="win-title">research.txt</span>
+    </div>
+    <div class="win-body">
+      <p>See what I'm working on.</p>
+      <p class="win-links"><a href="research.html">research →</a></p>
+    </div>
+  </section>
+  <section class="win" id="software-win" data-title="software.txt" role="dialog" aria-label="software.txt">
+    <div class="win-bar">
+      <div class="dots">
+        <button class="dot red" data-act="close" aria-label="Close"></button>
+        <button class="dot yellow" data-act="min" aria-label="Minimise"></button>
+        <button class="dot green" data-act="max" aria-label="Expand"></button>
+      </div>
+      <span class="win-title">software.txt</span>
+    </div>
+    <div class="win-body">
+      <img class="win-logo" src="assets/gganimslide-logo.png" alt="gganimslide logo" />
+      <p>Try <strong>gganimslide</strong>: an easy way to create animated slides from ggplot2.</p>
+      <p class="win-links"><a href="software.html">software →</a></p>
+    </div>
+  </section>
+  <section class="win" id="about" data-title="about.txt" role="dialog" aria-label="about.txt">
     <div class="win-bar">
       <div class="dots">
         <button class="dot red" data-act="close" aria-label="Close"></button>
@@ -64,11 +93,11 @@
     <div class="win-body">
       <p>Hi, I'm Joël. I study Comparative and International Studies (MACIS) at ETH Zurich and the University of Zurich.</p>
       <p>I'm interested in digital politics, political communication and computational methods.</p>
-      <p class="win-links"><a href="https://orcid.org/0009-0002-9551-1876">orcid ↗</a><a href="https://github.com/joellattmann">github ↗</a></p>
+      <p class="win-links"><a href="https://orcid.org/0009-0002-9551-1876">orcid ↗&#xFE0E;</a><a href="https://github.com/joellattmann">github ↗&#xFE0E;</a></p>
     </div>
   </section>
-  <button class="reopen" id="reopen" aria-label="Open about">about.txt</button>
+  <div class="dock" id="dock" aria-label="Closed windows"></div>
 
-  <script src="main.js?v=20261121c"></script>
+  <script src="main.js?v=20261122e"></script>
 </body>
 </html>

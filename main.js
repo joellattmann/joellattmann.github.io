@@ -205,41 +205,71 @@ if (canvas) {
   requestAnimationFrame(draw);
 }
 
-// about window: close / minimise / expand / drag / reopen
-const win = document.getElementById('about');
-const reopen = document.getElementById('reopen');
-if (win && reopen) {
-  win.addEventListener('animationend', () => win.classList.add('shown'));
+// desktop-style windows: close / minimise / expand / drag / focus / reopen from dock
+const wins = [...document.querySelectorAll('.win')];
+const dock = document.getElementById('dock');
+if (wins.length && dock) {
+  let top = 10;
+  const mobile = () => window.matchMedia('(max-width: 700px)').matches;
+  const focus = w => { w.style.zIndex = ++top; };
 
-  win.querySelectorAll('.dot').forEach(btn => btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const act = btn.dataset.act;
-    if (act === 'close') { win.classList.add('closed'); reopen.classList.add('show'); }
-    if (act === 'min') win.classList.toggle('min');
-    if (act === 'max') win.classList.toggle('max');
-  }));
+  // keep minimised windows stacked in the bottom-right corner on mobile
+  const restack = () => {
+    const dh = mobile() && dock.children.length ? dock.offsetHeight + 6 : 0;
+    wins.forEach(w => w.style.setProperty('--dock', dh + 'px'));
+    wins.filter(w => w.classList.contains('min') && !w.classList.contains('closed'))
+        .forEach((w, i) => w.style.setProperty('--stack', i));
+  };
 
-  reopen.addEventListener('click', () => {
-    win.classList.remove('closed', 'min');
-    win.classList.add('shown');
-    win.style.left = ''; win.style.top = '';
-    reopen.classList.remove('show');
-  });
+  const renderDock = () => {
+    dock.innerHTML = '';
+    const order = ['about', 'research-win', 'software-win'];   // dock order: about, research, software
+    order.map(id => document.getElementById(id))
+      .filter(w => w && w.classList.contains('closed')).forEach(w => {
+      const b = document.createElement('button');
+      b.textContent = w.dataset.title;
+      b.addEventListener('click', () => {
+        w.classList.remove('closed', 'min', 'max');
+        w.classList.add('shown');
+        w.style.left = ''; w.style.top = '';
+        focus(w); renderDock(); restack();
+      });
+      dock.appendChild(b);
+    });
+  };
 
-  // drag by title bar
-  const bar = win.querySelector('.win-bar');
-  let drag = null;
-  bar.addEventListener('pointerdown', e => {
-    if (e.target.closest('.dot')) return;
-    const r = win.getBoundingClientRect();
-    drag = { dx: e.clientX - (r.left + r.width / 2), dy: e.clientY - (r.top + r.height / 2) };
-    bar.setPointerCapture(e.pointerId);
+  wins.forEach(w => {
+    w.addEventListener('animationend', () => w.classList.add('shown'));
+    w.addEventListener('pointerdown', () => focus(w));
+
+    w.querySelectorAll('.dot').forEach(btn => btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const act = btn.dataset.act;
+      w.classList.add('shown');
+      if (act === 'close') { w.classList.add('closed'); w.classList.remove('min'); renderDock(); }
+      if (act === 'min') { w.classList.toggle('min'); w.classList.remove('max'); }
+      if (act === 'max') { w.classList.toggle('max'); w.classList.remove('min'); }
+      restack();
+    }));
+
+    // drag by title bar (not while minimised on mobile)
+    const bar = w.querySelector('.win-bar');
+    let drag = null;
+    bar.addEventListener('pointerdown', e => {
+      if (e.target.closest('.dot')) return;
+      if (mobile() && w.classList.contains('min')) return;
+      const r = w.getBoundingClientRect();
+      drag = { dx: e.clientX - (r.left + r.width / 2), dy: e.clientY - (r.top + r.height / 2) };
+      bar.setPointerCapture(e.pointerId);
+    });
+    bar.addEventListener('pointermove', e => {
+      if (!drag) return;
+      w.classList.add('shown');
+      w.style.left = (e.clientX - drag.dx) + 'px';
+      w.style.top = (e.clientY - drag.dy) + 'px';
+    });
+    const end = () => { drag = null; };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
   });
-  bar.addEventListener('pointermove', e => {
-    if (!drag) return;
-    win.classList.add('shown');
-    win.style.left = (e.clientX - drag.dx) + 'px';
-    win.style.top = (e.clientY - drag.dy) + 'px';
-  });
-  bar.addEventListener('pointerup', () => { drag = null; });
 }
