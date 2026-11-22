@@ -275,16 +275,17 @@ footer a:hover { color: #fff; }
   transition: width 0.35s cubic-bezier(.2,.8,.2,1);
 }
 /* desktop: research sits below-left of about (no overlap), software overlaps about's bottom-right corner in front */
-#about { --x: calc(50% + 1.75rem); --y: calc(50% - 118px); }
-#research-win { --x: max(calc(50% - 23.75rem), 10.5rem); --y: calc(50% + 66px); --w: 19rem; --delay: 1.7s; z-index: 3; }
-#software-win { --x: min(calc(50% + 22.25rem), calc(100% - 12rem)); --y: calc(50% + 40px); --w: 22rem; --delay: 2.05s; z-index: 7; }
+#about { --x: calc(50% + 54px); --y: calc(50% - 110px); }
+#research-win { --x: max(calc(50% - 364px), 10.5rem); --y: calc(50% + 76px); --w: 19rem; --delay: 1.7s; z-index: 3; }
+#software-win { --x: min(calc(50% + 259px), calc(100% - 12rem)); --y: calc(50% + 38px); --w: 22rem; --delay: 2.05s; z-index: 7; }
 
 .win.closed { display: none; }
 .win.min .win-body { display: none; }
 .win.max { width: min(calc(var(--w) * 1.45), calc(100vw - 2rem)); }
-.win.max .win-body { font-size: 18px; padding: 1.6rem 1.8rem 1.9rem; }
-.win.max .win-links { font-size: 12.5px; }
-.win.max .win-logo { width: 52px; right: 1.8rem; bottom: 1.75rem; }
+.win.max .win-body { min-height: 13rem; display: flex; flex-direction: column; }   /* bigger box, same text size */
+.win.max .win-body .win-links { margin-top: auto; padding-top: 1.1rem; }
+.win-more { display: none; }                      /* extra content shown only when expanded */
+.win.max .win-more { display: block; margin-top: 0.7rem; }
 
 @keyframes pop {
   from { opacity: 0; transform: translate(-50%, -46%) scale(0.97); }
@@ -354,7 +355,7 @@ footer a:hover { color: #fff; }
   filter: grayscale(1) contrast(1.1);
   transition: filter 0.3s, width 0.3s;
 }
-#software-win .win-links { padding-right: 3.2rem; }
+#software-win .win-body > p:first-child { padding-right: 3.2rem; }   /* keep text clear of the logo */
 .win:hover .win-logo { filter: none; }
 
 /* dock for closed windows */

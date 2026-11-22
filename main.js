@@ -239,6 +239,18 @@ if (wins.length && dock) {
     });
   };
 
+  // mobile: tuck research.txt behind about.txt so only its link row peeks out
+  const about = document.getElementById('about');
+  const research = document.getElementById('research-win');
+  const layoutMobile = () => {
+    if (!about || !research || research.style.left) return;   // leave it alone once dragged
+    if (!mobile()) { research.style.removeProperty('--y'); return; }
+    const aboutTop = window.innerHeight * 0.46 - about.offsetHeight / 2;
+    research.style.setProperty('--y', (aboutTop + 12 - research.offsetHeight / 2) + 'px');
+  };
+  layoutMobile();
+  window.addEventListener('resize', layoutMobile);
+
   wins.forEach(w => {
     w.addEventListener('animationend', () => w.classList.add('shown'));
     w.addEventListener('pointerdown', () => focus(w));
