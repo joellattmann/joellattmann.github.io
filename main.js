@@ -217,8 +217,9 @@ if (wins.length && dock) {
   const restack = () => {
     const dh = mobile() && dock.children.length ? dock.offsetHeight + 6 : 0;
     wins.forEach(w => w.style.setProperty('--dock', dh + 'px'));
-    wins.filter(w => w.classList.contains('min') && !w.classList.contains('closed'))
-        .forEach((w, i) => w.style.setProperty('--stack', i));
+    ['about', 'research-win', 'software-win'].map(id => document.getElementById(id))   // same order as the dock
+      .filter(w => w && w.classList.contains('min') && !w.classList.contains('closed'))
+      .forEach((w, i) => w.style.setProperty('--stack', i));
   };
 
   const renderDock = () => {
