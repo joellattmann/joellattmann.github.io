@@ -286,3 +286,19 @@ if (wins.length && dock) {
     bar.addEventListener('pointercancel', end);
   });
 }
+
+// scroll reveal for list entries on every tab
+const entries = document.querySelectorAll('.entry');
+if (entries.length && 'IntersectionObserver' in window) {
+  document.documentElement.classList.add('js-reveal');
+  const io = new IntersectionObserver(items => {
+    items.forEach(it => {
+      if (!it.isIntersecting) return;
+      // stagger rows that enter together
+      const i = [...entries].indexOf(it.target);
+      setTimeout(() => it.target.classList.add('in'), (i % 4) * 120);
+      io.unobserve(it.target);
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
+  entries.forEach(e => io.observe(e));
+}

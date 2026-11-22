@@ -151,7 +151,10 @@ main {
 .rule {
   border: 0;
   border-top: 1px solid var(--faint);
+  transform-origin: left;
+  animation: draw 0.9s 0.15s cubic-bezier(.6,0,.2,1) both;   /* same line-draw as the entries */
 }
+@keyframes draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 .page-title {
   font-family: var(--display);
@@ -183,12 +186,29 @@ main {
 
 /* software entry: index-style grid */
 .entry {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 1.5rem 2rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--faint);
 }
+/* divider line drawn as a pseudo-element so it can animate */
+.entry::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 1px;
+  background: var(--faint);
+  transform-origin: left;
+}
+
+/* scroll reveal: line draws left to right, then the row fades up */
+.js-reveal .entry::before { transform: scaleX(0); transition: transform 0.9s cubic-bezier(.6,0,.2,1); }
+.js-reveal .entry > * { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.7,.2,1); }
+.js-reveal .entry > *:nth-child(2) { transition-delay: 0.1s; }
+.js-reveal .entry.in::before { transform: scaleX(1); }
+.js-reveal .entry.in > * { opacity: 1; transform: none; transition-delay: 0.35s; }
+.js-reveal .entry.in > *:nth-child(2) { transition-delay: 0.45s; }
 
 .entry h2 {
   font-family: var(--sans);
@@ -422,6 +442,7 @@ footer a:hover { color: #fff; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .js-reveal .entry::before, .js-reveal .entry > * { transform: none !important; opacity: 1 !important; transition: none !important; }
   .landing .name, .landing .note { animation: none; opacity: 1; }
   .loader { display: none; }
   .win { animation: none; opacity: 1; }
