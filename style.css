@@ -275,9 +275,9 @@ footer a:hover { color: #fff; }
   transition: width 0.35s cubic-bezier(.2,.8,.2,1);
 }
 /* desktop: research sits below-left of about (no overlap), software overlaps about's bottom-right corner in front */
-#about { --x: calc(50% + 54px); --y: calc(50% - 110px); }
+#about { --x: calc(50% + 140px); --y: calc(50% - 146px); }
 #research-win { --x: max(calc(50% - 364px), 10.5rem); --y: calc(50% + 76px); --w: 19rem; --delay: 1.7s; z-index: 3; }
-#software-win { --x: min(calc(50% + 259px), calc(100% - 12rem)); --y: calc(50% + 38px); --w: 22rem; --delay: 2.05s; z-index: 7; }
+#software-win { --x: min(calc(50% + 341px), calc(100% - 12rem)); --y: calc(50% + 1px); --w: 22rem; --delay: 2.05s; z-index: 7; }
 
 .win.closed { display: none; }
 .win.min .win-body { display: none; }
